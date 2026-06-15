@@ -73,6 +73,7 @@ private data class WeatherInfo(
     val humidity: Int,
     val windSpeed: Double,
     val weatherCode: Int,
+    val updatedAt: String,
 )
 
 private data class CityLocation(
@@ -252,7 +253,7 @@ private fun WeatherCard(weather: WeatherInfo) {
 
             Spacer(modifier = Modifier.height(20.dp))
             Text(
-                text = "${weather.temperature.toInt()} C",
+                text = formatTemperature(weather.temperature),
                 style = MaterialTheme.typography.displayMedium,
                 fontWeight = FontWeight.Bold,
             )
@@ -260,6 +261,12 @@ private fun WeatherCard(weather: WeatherInfo) {
                 text = weatherDescription(weather.weatherCode),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.titleMedium,
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Updated ${formatWeatherTime(weather.updatedAt)}",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
             )
             Spacer(modifier = Modifier.height(18.dp))
 
@@ -271,7 +278,7 @@ private fun WeatherCard(weather: WeatherInfo) {
                 )
                 WeatherMetric(
                     label = "Wind",
-                    value = "${weather.windSpeed.toInt()} km/h",
+                    value = formatWindSpeed(weather.windSpeed),
                     modifier = Modifier.weight(1f),
                 )
             }
@@ -414,8 +421,21 @@ private suspend fun fetchWeather(city: String): WeatherInfo {
             humidity = current.getInt("relative_humidity_2m"),
             windSpeed = current.getDouble("wind_speed_10m"),
             weatherCode = current.getInt("weather_code"),
+            updatedAt = current.getString("time"),
         )
     }
+}
+
+private fun formatTemperature(value: Double): String {
+    return "${value.toInt()} C"
+}
+
+private fun formatWindSpeed(value: Double): String {
+    return "${value.toInt()} km/h"
+}
+
+private fun formatWeatherTime(value: String): String {
+    return value.replace("T", " ")
 }
 
 private fun fetchLocation(city: String): CityLocation {
