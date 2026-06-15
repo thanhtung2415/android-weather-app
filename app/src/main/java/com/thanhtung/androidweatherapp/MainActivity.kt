@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -81,6 +82,14 @@ private data class CityLocation(
     val longitude: Double,
 )
 
+private val SuggestedCities = listOf(
+    "Ho Chi Minh City",
+    "Hanoi",
+    "Da Nang",
+    "Bangkok",
+    "Tokyo",
+)
+
 @Composable
 private fun WeatherApp() {
     var uiState by remember { mutableStateOf(WeatherUiState()) }
@@ -121,6 +130,7 @@ private fun WeatherApp() {
                 cityInput = uiState.cityInput,
                 isLoading = uiState.isLoading,
                 onCityInputChange = { uiState = uiState.copy(cityInput = it) },
+                onQuickCitySelected = { city -> uiState = uiState.copy(cityInput = city) },
                 onSearch = ::searchWeather,
             )
 
@@ -160,6 +170,7 @@ private fun SearchPanel(
     cityInput: String,
     isLoading: Boolean,
     onCityInputChange: (String) -> Unit,
+    onQuickCitySelected: (String) -> Unit,
     onSearch: () -> Unit,
 ) {
     ElevatedCard(
@@ -185,6 +196,28 @@ private fun SearchPanel(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(if (isLoading) "Searching..." else "Search weather")
+            }
+            QuickCityRow(onQuickCitySelected = onQuickCitySelected)
+        }
+    }
+}
+
+@Composable
+private fun QuickCityRow(onQuickCitySelected: (String) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            text = "Quick cities",
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.labelLarge,
+        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.horizontalScroll(rememberScrollState()),
+        ) {
+            SuggestedCities.forEach { city ->
+                TextButton(onClick = { onQuickCitySelected(city) }) {
+                    Text(city)
+                }
             }
         }
     }
