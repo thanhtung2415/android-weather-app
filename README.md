@@ -13,6 +13,8 @@ The app uses the public Open-Meteo APIs, so it does not require an API key.
 - Search weather by city name
 - Select a quick city shortcut for common test locations
 - Display city, country, temperature, weather condition, humidity, and wind speed
+- Display the latest weather update time from the API response
+- Keep a short list of recent successful city searches
 - Show loading state while requesting data
 - Show error state when the city cannot be found or the request fails
 - Use a public geocoding API to find latitude and longitude
@@ -45,14 +47,19 @@ The app uses the public Open-Meteo APIs, so it does not require an API key.
 - Building UI with Jetpack Compose
 - Handling user input
 - Adding quick city shortcuts
+- Managing recent search state in the UI
 - Running network requests outside the main thread
 - Parsing JSON with `JSONObject`
 - Managing loading, success, and error states
 - Preparing a project for GitHub portfolio use
 
+## Current Portfolio Status
+
+This version is ready as a beginner mobile app portfolio project. It demonstrates a complete small feature flow: entering a city, loading data from a public API, parsing the response, showing useful weather information, and handling common UI states.
+
 ## Planned Improvements
 
-- Add recent searched cities
+- Persist recent searches locally
 - Add better weather icons
 - Add daily forecast
 - Add screenshots and demo video
