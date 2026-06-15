@@ -64,6 +64,7 @@ private data class WeatherUiState(
     val weather: WeatherInfo? = null,
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
+    val recentCities: List<String> = emptyList(),
 )
 
 private data class WeatherInfo(
@@ -103,11 +104,17 @@ private fun WeatherApp() {
             return
         }
 
+        val previousRecentCities = uiState.recentCities
         uiState = uiState.copy(isLoading = true, errorMessage = null)
         coroutineScope.launch {
             uiState = try {
                 val weather = fetchWeather(city)
-                uiState.copy(weather = weather, isLoading = false, errorMessage = null)
+                uiState.copy(
+                    weather = weather,
+                    isLoading = false,
+                    errorMessage = null,
+                    recentCities = addRecentCity(previousRecentCities, weather.cityName),
+                )
             } catch (exception: Exception) {
                 uiState.copy(
                     isLoading = false,
@@ -130,8 +137,10 @@ private fun WeatherApp() {
             SearchPanel(
                 cityInput = uiState.cityInput,
                 isLoading = uiState.isLoading,
+                recentCities = uiState.recentCities,
                 onCityInputChange = { uiState = uiState.copy(cityInput = it) },
                 onQuickCitySelected = { city -> uiState = uiState.copy(cityInput = city) },
+                onRecentCitySelected = { city -> uiState = uiState.copy(cityInput = city) },
                 onSearch = ::searchWeather,
             )
 
@@ -170,8 +179,10 @@ private fun WeatherHeader() {
 private fun SearchPanel(
     cityInput: String,
     isLoading: Boolean,
+    recentCities: List<String>,
     onCityInputChange: (String) -> Unit,
     onQuickCitySelected: (String) -> Unit,
+    onRecentCitySelected: (String) -> Unit,
     onSearch: () -> Unit,
 ) {
     ElevatedCard(
@@ -199,6 +210,12 @@ private fun SearchPanel(
                 Text(if (isLoading) "Searching..." else "Search weather")
             }
             QuickCityRow(onQuickCitySelected = onQuickCitySelected)
+            if (recentCities.isNotEmpty()) {
+                RecentCityRow(
+                    recentCities = recentCities,
+                    onRecentCitySelected = onRecentCitySelected,
+                )
+            }
         }
     }
 }
@@ -217,6 +234,30 @@ private fun QuickCityRow(onQuickCitySelected: (String) -> Unit) {
         ) {
             SuggestedCities.forEach { city ->
                 TextButton(onClick = { onQuickCitySelected(city) }) {
+                    Text(city)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RecentCityRow(
+    recentCities: List<String>,
+    onRecentCitySelected: (String) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            text = "Recent searches",
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.labelLarge,
+        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.horizontalScroll(rememberScrollState()),
+        ) {
+            recentCities.forEach { city ->
+                TextButton(onClick = { onRecentCitySelected(city) }) {
                     Text(city)
                 }
             }
@@ -436,6 +477,10 @@ private fun formatWindSpeed(value: Double): String {
 
 private fun formatWeatherTime(value: String): String {
     return value.replace("T", " ")
+}
+
+private fun addRecentCity(currentCities: List<String>, city: String): List<String> {
+    return (listOf(city) + currentCities.filterNot { it.equals(city, ignoreCase = true) }).take(5)
 }
 
 private fun fetchLocation(city: String): CityLocation {
